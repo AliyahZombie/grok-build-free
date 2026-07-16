@@ -6,6 +6,12 @@
 //! that only want event tracking + inference metrics no longer pull in
 //! Mixpanel/HTTP/identity dependencies.
 
+/// Privacy build: all telemetry and error-reporting exporters are compiled as
+/// dormant.  Keep the event types available because they are used throughout
+/// the application as lightweight instrumentation contracts, but never create
+/// a network sink or enqueue an event.
+pub const TELEMETRY_COMPILED_OUT: bool = true;
+
 mod appender;
 pub mod client;
 pub mod config;

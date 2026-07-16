@@ -135,6 +135,10 @@ const _: () = assert!(EmitterOrigin::ALL.len() == <EmitterOrigin as strum::EnumC
 /// site, two sinks, independent gates"): the external gate is
 /// `external::is_active()`, independent of `TelemetryMode`.
 pub fn log_event<T: TelemetryEvent>(data: T) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = data;
+        return;
+    }
     crate::external::emit(&data);
     if !client::is_enabled() {
         return;
@@ -155,6 +159,10 @@ pub fn log_event<T: TelemetryEvent>(data: T) {
 /// `turn.count` exactly-once on every path while never sending an internal
 /// record under ZDR.
 pub fn log_event_dual<T: TelemetryEvent>(internal_enabled: bool, data: T) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = (internal_enabled, data);
+        return;
+    }
     if internal_enabled {
         log_event(data);
     } else {
@@ -168,6 +176,10 @@ pub fn log_event_dual<T: TelemetryEvent>(internal_enabled: bool, data: T) {
 /// Unconditionally fans out to the external OTEL stream first (independent
 /// gate; see [`log_event`]).
 pub fn log_session_event<T: TelemetryEvent>(data: T) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = data;
+        return;
+    }
     crate::external::emit(&data);
     if !client::is_session_metrics_enabled() {
         return;
@@ -187,6 +199,10 @@ pub fn log_session_event<T: TelemetryEvent>(data: T) {
 /// `external::tests`). If the external stream ever needs workspace events,
 /// the hook moves here behind an explicit `origin == Shell` filter.
 pub fn log_session_event_with_origin<T: TelemetryEvent>(origin: EmitterOrigin, data: T) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = (origin, data);
+        return;
+    }
     if !client::is_session_metrics_enabled() {
         return;
     }
@@ -204,6 +220,10 @@ pub fn emit_event_with_origin<T: Serialize + Send + 'static>(
     event_suffix: impl Into<String>,
     data: T,
 ) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = (origin, event_suffix, data);
+        return;
+    }
     let event_name = format!("{}{}", origin.event_prefix(), event_suffix.into());
     let ctx_snapshot = TELEMETRY_CTX
         .try_with(|c| {

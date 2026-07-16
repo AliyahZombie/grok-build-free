@@ -380,6 +380,10 @@ impl WorkspaceHandle {
         xai_computer_hub_sdk::HubDonatingReporter,
         xai_computer_hub_sdk::TraceDonationPump,
     )> {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            let _ = (self, service_name);
+            return None;
+        }
         self.shared
             .hub_handle
             .lock()
@@ -403,6 +407,10 @@ impl WorkspaceHandle {
         xai_computer_hub_sdk::LogDonationSender,
         xai_computer_hub_sdk::LogDonationPump,
     )> {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            let _ = (self, service_name);
+            return None;
+        }
         self.shared
             .hub_handle
             .lock()
@@ -420,6 +428,10 @@ impl WorkspaceHandle {
         &self,
         service_name: &str,
     ) -> Option<xai_computer_hub_sdk::MetricDonationPump> {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            let _ = (self, service_name);
+            return None;
+        }
         self.shared
             .hub_handle
             .lock()

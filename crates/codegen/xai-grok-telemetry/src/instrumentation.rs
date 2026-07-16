@@ -37,6 +37,9 @@ static LOG_GUARD: OnceLock<Mutex<Option<tracing_appender::non_blocking::WorkerGu
 static CHROME_GUARD: OnceLock<Mutex<Option<FlushGuard>>> = OnceLock::new();
 
 fn mode() -> InstrumentationMode {
+    if crate::TELEMETRY_COMPILED_OUT {
+        return InstrumentationMode::Disabled;
+    }
     *INSTRUMENTATION_MODE.get_or_init(|| {
         let env_mode = match std::env::var(ENV_ENABLED) {
             Ok(v) => match v.trim().to_ascii_lowercase().as_str() {

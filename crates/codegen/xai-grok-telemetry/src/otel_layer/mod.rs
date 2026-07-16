@@ -106,6 +106,10 @@ where
         .with_filter(otel_filter)
 }
 fn build_tracer_provider(client: OtelClientInfo, config: OtelLayerConfig) -> SdkTracerProvider {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = (client, config);
+        return SdkTracerProvider::builder().build();
+    }
     match instrumentation::current_mode() {
         instrumentation::InstrumentationMode::Server => build_server_provider(client, config),
         _ => SdkTracerProvider::builder().build(),

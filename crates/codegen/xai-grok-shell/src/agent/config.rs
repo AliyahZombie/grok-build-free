@@ -409,6 +409,9 @@ impl EndpointsConfig {
     /// still honored by the internal pipeline even with `GROK_EXTERNAL_OTEL`
     /// set: disabling internal span export is the safe direction.
     pub fn resolve_traces_export_enabled(&self) -> bool {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            return false;
+        }
         !matches!(
             self.otel_traces_exporter.as_deref().map(str::trim),
             Some("none")
@@ -2057,6 +2060,9 @@ impl Config {
         self.resolve_two_pass_compaction().value
     }
     pub(crate) fn resolve_telemetry_mode(&self) -> Resolved<TelemetryMode> {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            return Resolved::new(TelemetryMode::Disabled, ConfigSource::Default);
+        }
         if let Some(mode) = self.requirements.telemetry.pinned() {
             return Resolved::new(mode, ConfigSource::Requirement);
         }
@@ -2079,6 +2085,9 @@ impl Config {
         Resolved::new(TelemetryMode::Disabled, ConfigSource::Default)
     }
     pub(crate) fn resolve_trace_upload(&self) -> Resolved<bool> {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            return Resolved::new(false, ConfigSource::Default);
+        }
         let mode = self.resolve_telemetry_mode();
         let ff = if mode.value.is_disabled() {
             None
@@ -2145,6 +2154,9 @@ impl Config {
         )
     }
     pub(crate) fn resolve_feedback(&self) -> Resolved<bool> {
+        if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+            return Resolved::new(false, ConfigSource::Default);
+        }
         let ff = self
             .remote_settings
             .as_ref()
@@ -2913,6 +2925,9 @@ impl SyncBoolFlag {
 /// Sync slice of [`Config::resolve_telemetry_mode`] for use before the tokio
 /// runtime (e.g. `init_sentry`). `true` only when explicitly off.
 pub fn is_telemetry_disabled_sync() -> bool {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        return true;
+    }
     !SyncBoolFlag::new(telemetry_enabled_from_toml)
         .disable_env("DISABLE_TELEMETRY")
         .enable_env(grok_telemetry_env_enabled)
@@ -2922,6 +2937,9 @@ pub fn is_telemetry_disabled_sync() -> bool {
 /// *explicitly* off; absence is not disabled (`.default(true)`) so remote-only
 /// enablement still builds the OTLP exporter (the runtime gate then governs it).
 pub fn is_telemetry_explicitly_disabled_sync() -> bool {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        return true;
+    }
     !SyncBoolFlag::new(telemetry_enabled_from_toml)
         .disable_env("DISABLE_TELEMETRY")
         .enable_env(grok_telemetry_env_enabled)
@@ -2931,6 +2949,9 @@ pub fn is_telemetry_explicitly_disabled_sync() -> bool {
 /// Sync sibling of [`is_telemetry_disabled_sync`] scoped to Sentry. Inherits
 /// from telemetry when no Sentry-specific signal is set.
 pub fn is_error_reporting_disabled_sync() -> bool {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        return true;
+    }
     !SyncBoolFlag::new(error_reporting_enabled_from_toml)
         .disable_env("DISABLE_ERROR_REPORTING")
         .enable_env(|| env_bool("GROK_ERROR_REPORTING"))
@@ -2979,6 +3000,9 @@ pub(crate) fn read_requirements_toml() -> Option<toml::Value> {
 /// `internal_pipeline_consumed_otel_vars` simultaneously blocks the external
 /// stream — exactly the split this design forbids.
 pub(crate) fn external_otel_master_switch_resolved() -> bool {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        return false;
+    }
     external_otel_master_switch_from(
         xai_grok_config::load_merged_requirements().as_ref(),
         env_bool("GROK_EXTERNAL_OTEL"),
@@ -3015,6 +3039,10 @@ pub(crate) fn external_otel_master_switch_from(
 pub fn resolve_external_otel_config(
     client: xai_grok_telemetry::external::config::ExternalClientInfo,
 ) -> Option<xai_grok_telemetry::external::ExternalOtelConfig> {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        let _ = client;
+        return None;
+    }
     resolve_external_otel_config_with(
         crate::config::load_effective_config().ok().as_ref(),
         xai_grok_config::load_merged_requirements().as_ref(),

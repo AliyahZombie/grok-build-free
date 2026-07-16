@@ -36,6 +36,13 @@ pub fn resolve_crash_handler_enabled(
     managed: Option<&TomlValue>,
     remote: Option<&RemoteSettings>,
 ) -> crate::agent::config::Resolved<bool> {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        let _ = (requirements, user, managed, remote);
+        return crate::agent::config::Resolved::new(
+            false,
+            crate::agent::config::ConfigSource::Default,
+        );
+    }
     resolve_crash_handler_enabled_layers(
         crash_handler_from_toml(requirements),
         crash_handler_from_toml(user),
@@ -81,6 +88,9 @@ fn load_managed_toml_layers() -> Option<TomlValue> {
 /// system/home managed from disk plus the cached remote tier. Defaults
 /// `false`.
 pub fn load_crash_handler_enabled_sync() -> bool {
+    if xai_grok_telemetry::TELEMETRY_COMPILED_OUT {
+        return false;
+    }
     let requirements = crate::config::load_merged_requirements();
     let user = crate::config::load_from_disk().ok();
     let managed = load_managed_toml_layers();

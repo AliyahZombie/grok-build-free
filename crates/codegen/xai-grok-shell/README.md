@@ -1291,7 +1291,7 @@ max_thoughts_width = 120               # max column width for reasoning display
 
 [features]
 support_permission = false             # prompt before tool execution
-telemetry = false                      # anonymous usage telemetry (env: GROK_TELEMETRY_ENABLED)
+telemetry = false                      # compatibility key; compiled out in this privacy build
 feedback = false                       # feedback system (env: GROK_FEEDBACK_ENABLED)
 lsp_tools = false                      # expose the lsp tool (see LSP Servers below)
 codebase_indexing = true               # code graph indexing (true, false, or glob patterns)
@@ -1320,7 +1320,15 @@ confirm_quit = true
 
 ### Telemetry
 
-Configure telemetry destinations and credentials. Empty values disable the corresponding sink. Env vars take precedence over config values. Builds from the public source tree carry no telemetry defaults: `events_url`, `events_api_key`, and `mixpanel_token` are unset and `mixpanel_enabled` is `false`, so nothing is sent unless you supply values here or via env.
+This source tree is a privacy build: product analytics, session metrics, Mixpanel,
+Sentry, internal/external OpenTelemetry export, feedback collection/analytics, workspace
+telemetry donation, and trace artifact uploads are compiled out. Configuration,
+environment variables, remote settings, managed requirements, and build-time
+tokens cannot enable them. Telemetry event types remain in the source only to
+avoid coupling application behavior to analytics plumbing.
+
+The configuration keys below are retained for file-format compatibility but are
+inert in this build.
 
 ```toml
 [telemetry]
@@ -1330,8 +1338,6 @@ mixpanel_token = "..."                      # env: GROK_TELEMETRY_MIXPANEL_TOKEN
 mixpanel_enabled = true                     # env: GROK_TELEMETRY_MIXPANEL_ENABLED
 trace_upload = true                         # env: GROK_TELEMETRY_TRACE_UPLOAD
 ```
-
-When building from source, defaults can also be baked into the binary at compile time by setting `GROK_TELEMETRY_BUILD_EVENTS_URL`, `GROK_TELEMETRY_BUILD_EVENTS_API_KEY`, and `GROK_TELEMETRY_BUILD_MIXPANEL_TOKEN` in the build environment (providing a Mixpanel token this way also enables Mixpanel by default). Config-file and runtime env values override build-time defaults.
 
 ### LSP Servers
 

@@ -119,30 +119,15 @@ pub struct TelemetryConfig {
 fn internal_defaults() -> (Option<String>, Option<String>, Option<String>, bool) {
     (None, None, None, false)
 }
-fn build_env_default(value: Option<&'static str>) -> Option<String> {
-    value
-        .map(str::trim)
-        .filter(|v| !v.is_empty())
-        .map(str::to_owned)
-}
 impl Default for TelemetryConfig {
     fn default() -> Self {
-        let (baked_url, baked_key, baked_token, baked_enabled) = internal_defaults();
-        let build_url = build_env_default(option_env!("GROK_TELEMETRY_BUILD_EVENTS_URL"));
-        let build_key = build_env_default(option_env!("GROK_TELEMETRY_BUILD_EVENTS_API_KEY"));
-        let build_token = build_env_default(option_env!("GROK_TELEMETRY_BUILD_MIXPANEL_TOKEN"));
-        let mixpanel_enabled = baked_enabled || build_token.is_some();
-        let (events_url, events_api_key, mixpanel_token) = (
-            build_url.or(baked_url),
-            build_key.or(baked_key),
-            build_token.or(baked_token),
-        );
+        let (events_url, events_api_key, mixpanel_token, _) = internal_defaults();
         Self {
             enabled: None,
             events_url,
             events_api_key,
             mixpanel_token,
-            mixpanel_enabled,
+            mixpanel_enabled: false,
             trace_upload: None,
             otel_enabled: None,
             otel_metrics_exporter: None,
@@ -217,21 +202,11 @@ pub fn deployment_id_from_key(key: &str) -> String {
 mod tests {
     use super::*;
     #[test]
-    fn build_env_default_normalizes() {
-        assert_eq!(build_env_default(None), None);
-        assert_eq!(build_env_default(Some("")), None);
-        assert_eq!(build_env_default(Some(" \t ")), None);
-        assert_eq!(build_env_default(Some(" key ")), Some("key".to_owned()));
-    }
-    #[test]
-    fn default_is_build_env_layer_when_feature_off() {
+    fn default_has_no_telemetry_destinations() {
         let cfg = TelemetryConfig::default();
-        let url = build_env_default(option_env!("GROK_TELEMETRY_BUILD_EVENTS_URL"));
-        let key = build_env_default(option_env!("GROK_TELEMETRY_BUILD_EVENTS_API_KEY"));
-        let token = build_env_default(option_env!("GROK_TELEMETRY_BUILD_MIXPANEL_TOKEN"));
-        assert_eq!(cfg.mixpanel_enabled, token.is_some());
-        assert_eq!(cfg.events_url, url);
-        assert_eq!(cfg.events_api_key, key);
-        assert_eq!(cfg.mixpanel_token, token);
+        assert!(!cfg.mixpanel_enabled);
+        assert!(cfg.events_url.is_none());
+        assert!(cfg.events_api_key.is_none());
+        assert!(cfg.mixpanel_token.is_none());
     }
 }

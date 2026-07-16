@@ -133,6 +133,11 @@ impl ExternalTelemetry {
 /// config resolution, **before auth** (no credentials needed). `None` records
 /// the dormant state — the default path allocates nothing.
 pub fn init(cfg: Option<ExternalOtelConfig>) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = cfg;
+        let _ = EXTERNAL.set(None);
+        return;
+    }
     let value = cfg.and_then(build_handle);
     if EXTERNAL.set(value).is_err() {
         tracing::debug!("external otel: init called more than once; keeping first registration");
@@ -223,6 +228,9 @@ fn active_handle() -> Option<Arc<ExternalTelemetry>> {
 /// registry present AND the runtime emission gate set. A stale `true` read
 /// only costs a wasted mapping, never an export ([`emit`] re-checks).
 pub fn is_active() -> bool {
+    if crate::TELEMETRY_COMPILED_OUT {
+        return false;
+    }
     matches!(EXTERNAL.get(), Some(Some(ext)) if ext.active.load(Ordering::Relaxed))
 }
 
@@ -230,6 +238,10 @@ pub fn is_active() -> bool {
 /// and the event has an `external = …` mapping. Synchronous and cheap (the
 /// batch processor queues; nothing blocks on I/O).
 pub fn emit<T: crate::events::TelemetryEvent>(data: &T) {
+    if crate::TELEMETRY_COMPILED_OUT {
+        let _ = data;
+        return;
+    }
     let Some(ext) = active_handle() else {
         return;
     };
