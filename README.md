@@ -9,12 +9,20 @@
   <br>
   Grok Build (<code>grok</code>)
 </h1>
-[![LINUX DO](https://img.shields.io/badge/LINUX--DO-Community-blue?logo=linux.do&logoColor=white)](https://linux.do/)
-**Grok Build** is SpaceXAI's terminal-based AI coding agent. It runs as a
-full-screen TUI that understands your codebase, edits files, executes shell
-commands, searches the web, and manages long-running tasks — interactively,
-headlessly for scripting/CI, or embedded in editors via the Agent Client
-Protocol (ACP).
+
+<p>
+  <a href="https://linux.do/">
+    <img alt="LINUX DO" src="https://img.shields.io/badge/LINUX--DO-Community-blue?logo=linux.do&logoColor=white">
+  </a>
+</p>
+
+<p>
+  <strong>Grok Build</strong> is SpaceXAI's terminal-based AI coding agent. It runs as a
+  full-screen TUI that understands your codebase, edits files, executes shell
+  commands, searches the web, and manages long-running tasks — interactively,
+  headlessly for scripting/CI, or embedded in editors via the Agent Client
+  Protocol (ACP).
+</p>
 
 [Installing the released binary](#installing-the-released-binary) ·
 [Building from source](#building-from-source) ·
