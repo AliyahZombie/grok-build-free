@@ -9,7 +9,7 @@
   <br>
   Grok Build (<code>grok</code>)
 </h1>
-
+[![LINUX DO](https://img.shields.io/badge/LINUX--DO-Community-blue?logo=linux.do&logoColor=white)](https://linux.do/)
 **Grok Build** is SpaceXAI's terminal-based AI coding agent. It runs as a
 full-screen TUI that understands your codebase, edits files, executes shell
 commands, searches the web, and manages long-running tasks — interactively,
